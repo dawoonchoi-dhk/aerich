@@ -90,11 +90,12 @@ async def migrate(ctx: Context, name):
 
 
 @cli.command(help="Upgrade to specified version.")
+@click.option("--fake", is_flag=True)
 @click.pass_context
 @coro
-async def upgrade(ctx: Context):
+async def upgrade(ctx: Context, fake: bool):
     command = ctx.obj["command"]
-    migrated = await command.upgrade()
+    migrated = await command.upgrade(fake)
     if not migrated:
         click.secho("No upgrade items found", fg=Color.yellow)
     else:

@@ -35,7 +35,7 @@ class Command:
     async def init(self):
         await Migrate.init(self.tortoise_config, self.app, self.location)
 
-    async def upgrade(self):
+    async def upgrade(self, fake: bool = False):
         migrated = []
         for version_file in Migrate.get_all_version_files():
             try:
@@ -49,8 +49,9 @@ class Command:
                     file_path = Path(Migrate.migrate_location, version_file)
                     content = get_version_content_from_file(file_path)
                     upgrade_query_list = content.get("upgrade")
-                    for upgrade_query in upgrade_query_list:
-                        await conn.execute_script(upgrade_query)
+                    if not fake:
+                        for upgrade_query in upgrade_query_list:
+                            await conn.execute_script(upgrade_query)
                     await Aerich.create(
                         version=version_file,
                         app=self.app,
