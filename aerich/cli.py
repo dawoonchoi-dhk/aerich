@@ -90,7 +90,11 @@ async def migrate(ctx: Context, name):
 
 
 @cli.command(help="Upgrade to specified version.")
-@click.option("--fake", is_flag=True)
+@click.option(
+    "--fake",
+    is_flag=True,
+    help="Marks the migrations up to the target version as applied, but without actually running the SQL to change your database schema.",
+)
 @click.pass_context
 @coro
 async def upgrade(ctx: Context, fake: bool):
@@ -120,15 +124,20 @@ async def upgrade(ctx: Context, fake: bool):
     show_default=True,
     help="Delete version files at the same time.",
 )
+@click.option(
+    "--fake",
+    is_flag=True,
+    help="Marks the migrations up to the target version as applied, but without actually running the SQL to change your database schema.",
+)
 @click.pass_context
 @click.confirmation_option(
     prompt="Downgrade is dangerous, which maybe lose your data, are you sure?",
 )
 @coro
-async def downgrade(ctx: Context, version: int, delete: bool):
+async def downgrade(ctx: Context, version: int, delete: bool, fake: bool):
     command = ctx.obj["command"]
     try:
-        files = await command.downgrade(version, delete)
+        files = await command.downgrade(version, delete, fake)
     except DowngradeError as e:
         return click.secho(str(e), fg=Color.yellow)
     for file in files:
